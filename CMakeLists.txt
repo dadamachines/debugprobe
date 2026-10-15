@@ -24,6 +24,7 @@ add_executable(debugprobe
         src/sw_dp_pio.c
         src/tusb_edpt_handler.c
         src/autobaud.c
+        src/pio_uart.c
 )
 
 target_sources(debugprobe PRIVATE
@@ -45,6 +46,7 @@ target_compile_options(debugprobe PRIVATE -Wall)
 pico_generate_pio_header(debugprobe ${CMAKE_CURRENT_LIST_DIR}/src/probe.pio)
 pico_generate_pio_header(debugprobe ${CMAKE_CURRENT_LIST_DIR}/src/probe_oen.pio)
 pico_generate_pio_header(debugprobe ${CMAKE_CURRENT_LIST_DIR}/src/autobaud.pio)
+pico_generate_pio_header(debugprobe ${CMAKE_CURRENT_LIST_DIR}/src/pio_uart.pio)
 
 target_include_directories(debugprobe PRIVATE src)
 
@@ -65,7 +67,16 @@ target_compile_definitions (debugprobe PRIVATE
     PICO_ENABLE_USB_RESET_VIA_VENDOR_INTERFACE=1
 )
 
-if (NOT PICO_BOARD STREQUAL "debug_probe")
+# The TBD-16 direct plug-in probe on a standard Pico or Pico 2 (include/board_tbd_config.h):
+# cmake -DPICO_BOARD=pico2 -DDEBUGPROBE_TBD=ON  ->  tbd-debugprobe-pico2.uf2
+option(DEBUGPROBE_TBD "Build the TBD-16 direct plug-in pin mapping" OFF)
+
+if (DEBUGPROBE_TBD)
+    target_compile_definitions(debugprobe PRIVATE TBD_DEBUGPROBE=1)
+    set_target_properties(debugprobe PROPERTIES
+        OUTPUT_NAME "tbd-debugprobe-${PICO_BOARD}"
+    )
+elseif (NOT PICO_BOARD STREQUAL "debug_probe")
     set_target_properties(debugprobe PROPERTIES
         OUTPUT_NAME "debugprobe_on_${PICO_BOARD}"
     )

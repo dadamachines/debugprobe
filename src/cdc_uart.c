@@ -31,6 +31,18 @@
 
 #include "probe_config.h"
 
+#ifdef PROBE_UART_PIO
+// The board's UART pins are not the hardware UART's: the same calls go to a PIO UART (8n1 only).
+#include "pio_uart.h"
+#define uart_init(u, b) pio_uart_init(b)
+#define uart_deinit(u) pio_uart_deinit()
+#define uart_is_readable(u) pio_uart_readable()
+#define uart_getc(u) pio_uart_getc()
+#define uart_write_blocking(u, s, n) pio_uart_write_blocking((s), (n))
+#define uart_set_break(u, e) pio_uart_set_break(e)
+#define uart_set_format(u, d, s, p) pio_uart_set_format((d), (s), (p))
+#endif
+
 TaskHandle_t uart_taskhandle;
 TickType_t last_wake, interval = 100;
 volatile TickType_t break_expiry;

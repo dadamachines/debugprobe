@@ -27,7 +27,9 @@
 #define BOARD_CONFIG_H_
 
 #include "pico/stdlib.h"
-#if defined(RASPBERRYPI_DEBUG_PROBE)
+#if defined(TBD_DEBUGPROBE)
+#include "board_tbd_config.h"
+#elif defined(RASPBERRYPI_DEBUG_PROBE)
 #include "board_debug_probe_config.h"
 #elif defined(RASPBERRYPI_PICO) || defined(RASPBERRYPI_PICO2)
 #include "board_pico_config.h"

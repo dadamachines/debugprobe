@@ -82,3 +82,38 @@ To enable AutoBaud, configure the USB CDC port to the following custom baud rate
 
 Changing the baud rate to any other value disables AutoBaud.
 
+
+# TBD-16 direct Pico debug probe
+
+A standard Raspberry Pi Pico or Pico 2 that plugs straight into the TBD-16's 6-pin debug/extension port.
+
+**Hardware:** solder a straight 1x5 2.54 mm male header into the Pico's physical pins 3-7 (GND, GP2, GP3, GP4, GP5;
+the same positions on Pico and Pico 2). Plug it into the TBD-16's port, Pico pin 3 (GND) onto TBD pin 1 (GND, the
+rightmost pin seen from outside the case). The Pico's USB connector stays outside the enclosure and powers the Pico;
+TBD pin 6 (+5 V) stays unconnected.
+
+| TBD-16 port | Pico / Pico 2 | Probe function |
+|---|---|---|
+| 1 GND | pin 3 GND | ground |
+| 2 SWCLK | pin 4 GP2 | SWCLK |
+| 3 SWDAT | pin 5 GP3 | SWDIO |
+| 4 SDA (GPIO20, the TBD's debug UART TX) | pin 6 GP4 | UART RX |
+| 5 SCL (optional) | pin 7 GP5 | UART TX |
+
+GP4 receiving and GP5 transmitting is the reverse of the chips' hardware UART pins, so this build runs the USB CDC
+UART bridge on a PIO UART (8n1; parity and stop-bit settings from the host are ignored). SWD and CMSIS-DAP are
+unchanged.
+
+**Build** (Pico SDK 2.3.0 or later, an arm-none-eabi GCC):
+
+    cmake -S . -B build-tbd-pico2 -G Ninja -DPICO_BOARD=pico2 -DDEBUGPROBE_TBD=ON && ninja -C build-tbd-pico2
+    cmake -S . -B build-tbd-pico  -G Ninja -DPICO_BOARD=pico  -DDEBUGPROBE_TBD=ON && ninja -C build-tbd-pico
+
+giving `tbd-debugprobe-pico2.uf2` and `tbd-debugprobe-pico.uf2`.
+
+**Flash:** hold BOOTSEL, connect USB, copy the UF2 for your board onto the RPI-RP2 / RP2350 drive; the probe restarts.
+
+**Use:** `pio run -e possan_rev_c -t upload` (cmsis-dap) and `pio device monitor -b 115200`.
+
+**UART check without the TBD:** connect GP5 (pin 7) to GP4 (pin 6) with one wire, open the probe's serial port at
+115200 and type: every character comes back.
