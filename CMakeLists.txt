@@ -71,7 +71,14 @@ target_compile_definitions (debugprobe PRIVATE
 # cmake -DPICO_BOARD=pico2 -DDEBUGPROBE_TBD=ON  ->  tbd-debugprobe-pico2.uf2
 option(DEBUGPROBE_TBD "Build the TBD-16 direct plug-in pin mapping" OFF)
 
-if (DEBUGPROBE_TBD)
+option(DEBUGPROBE_TBD_JIGMINI "Build the TBD JIG Mini pin mapping (include/board_tbd_jigmini_config.h)" OFF)
+
+if (DEBUGPROBE_TBD_JIGMINI)
+    target_compile_definitions(debugprobe PRIVATE TBD_JIGMINI_DEBUGPROBE=1)
+    set_target_properties(debugprobe PROPERTIES
+        OUTPUT_NAME "tbd-jigmini-debugprobe-${PICO_BOARD}"
+    )
+elseif (DEBUGPROBE_TBD)
     target_compile_definitions(debugprobe PRIVATE TBD_DEBUGPROBE=1)
     set_target_properties(debugprobe PROPERTIES
         OUTPUT_NAME "tbd-debugprobe-${PICO_BOARD}"
